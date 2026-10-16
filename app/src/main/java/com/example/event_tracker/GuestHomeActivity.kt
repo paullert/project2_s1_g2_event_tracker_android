@@ -49,9 +49,9 @@ fun EventManagerApp() {
             onManageScreen = {
                 showAdminScreen = true
             },
-            onEditResponse = {},
-            onDetails = {},
-            onPublicEvents = {}
+//            onEditResponse = {},
+//            onDetails = {},
+//            onPublicEvents = {}
         )
     }
 }
@@ -117,6 +117,64 @@ fun GuestHomeScreen(
                 attendees = 99, //replace with attendee count from
                 onEditResponse = onEditResponse,
                 onDetails = onDetails
+            )
+        }
+    }
+}
+
+@Composable
+fun AdminHomeScreen(
+    onCreateEvent: () -> Unit = {},
+    onEditEvent: () -> Unit = {}
+) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFF3F3F3F)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Manage Events",
+                color = Color.White,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Serif
+            )
+
+            Spacer(modifier = Modifier.height(120.dp))
+
+            Button(
+                onClick = onCreateEvent
+            ) {
+                Text(
+                    text = "CREATE EVENT",
+                    fontSize = 18.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(140.dp))
+
+            Text(
+                text = "MANAGED EVENTS",
+                color = Color.White,
+                fontSize = 23.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Serif
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            EventCard(
+                eventName = "EXAMPLE EVENT",
+                date = "OCT. 14, 2026",
+                time = "3:00PM-8:00PM",
+                attendees = 99, //replace with attendee count from
+                onEdit = onEditEvent
             )
         }
     }

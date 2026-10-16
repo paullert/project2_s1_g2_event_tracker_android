@@ -2,7 +2,10 @@ package com.example.event_tracker
 
 import android.app.AlertDialog
 import android.content.Context
+import android.os.Bundle
 import android.widget.EditText
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,6 +42,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.compose.auth.composable.NativeSignInResult
+import io.github.jan.supabase.compose.auth.composable.rememberSignInWithGoogle
+import io.github.jan.supabase.compose.auth.composeAuth
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
+
 enum class AuthMode {
     Login,
     HomePage,
@@ -47,11 +61,25 @@ enum class AuthMode {
     PublicEvents
 }
 
+class MainActivity : ComponentActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setContent {
+            RuntimeLoginScreen()
+        }
+    }
+}
+
 
 @Composable
 fun MainPageComposable(
     modifier: Modifier = Modifier,
-    onLogin: () -> Unit = {}
+    onLogin: () -> Unit = {},
+    onGoogleLogin: () -> Unit = {},
+    //RuntimeLoginScreen: () -> Unit = {}
+
 ) {
     Box(
         modifier = modifier
@@ -141,25 +169,92 @@ fun MainPageComposable(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-                Button(
-                    onClick = { onLogin },
-                    shape = RoundedCornerShape(50.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                ) {
-                    Text(text = "Login")
-                }
+            Button(
+                onClick = onLogin,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("Login")
             }
 
-       }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            GoogleLoginButton(
+                onClick = onGoogleLogin
+            )
+        }
+    }
 }
+
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
         text = "Hello, $name!",
         modifier = modifier
     )
+}
+
+@Composable
+fun GoogleLoginButton(
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick
+    ) {
+        Text("Continue with Google")
+    }
+}
+
+@Composable
+fun RuntimeLoginScreen() {
+    var isLoggedIn by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    if (isLoggedIn) {
+        GuestHomeScreen(
+            onManageScreen = {
+                // Navigate to admin screen
+            },
+            onEditResponse = {},
+            onDetails = {},
+            onPublicEvents = {}
+        )
+    } else {
+        val googleLogin = supabase.composeAuth.rememberSignInWithGoogle(
+            onResult = { result ->
+                when (result) {
+                    is NativeSignInResult.Success -> {
+                        isLoggedIn = true
+                    }
+
+                    is NativeSignInResult.Error -> {
+                        println("Google login failed")
+                    }
+
+                    is NativeSignInResult.NetworkError -> {
+                        println("Network error")
+                    }
+
+                    NativeSignInResult.ClosedByUser -> {
+                        println("Login cancelled")
+                    }
+                }
+            }
+        )
+
+        MainPageComposable(
+            onLogin = {
+                // After successful email/password authentication:
+                isLoggedIn = true
+            },
+            onGoogleLogin = {
+                googleLogin.startFlow()
+                isLoggedIn = true
+            }
+        )
+    }
 }
 
 /*@Composable
@@ -170,5 +265,8 @@ private fun LoginButton(
 @Preview(showBackground = true)
 @Composable
 fun MainPageComposablePreview() {
-    MainPageComposable()
+    MainPageComposable(
+        onLogin = {},
+        onGoogleLogin = {}
+    )
 }
