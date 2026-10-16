@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,6 +28,7 @@ class AdminHomeActivity : ComponentActivity() {
             AdminHomeScreen(
                 onCreateEvent = {
                     // Navigate to Create Event screen
+
                 },
                 onEditEvent = {
                     // Navigate to Edit Event screen
@@ -38,8 +40,8 @@ class AdminHomeActivity : ComponentActivity() {
 
 @Composable
 fun AdminHomeScreen(
-    onCreateEvent: () -> Unit,
-    onEditEvent: () -> Unit
+    onCreateEvent: () -> Unit = {},
+    onEditEvent: () -> Unit = {}
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -53,7 +55,7 @@ fun AdminHomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "WELCOME, ADMIN!", //replace with username
+                text = "Manage Events",
                 color = Color.White,
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
@@ -156,5 +158,5 @@ fun EventCard(
 @Preview(showBackground = true)
 @Composable
 fun AdminHomeActivityPreview() {
-    AdminHomeActivity()
+    AdminHomeScreen()
 }
