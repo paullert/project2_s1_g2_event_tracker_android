@@ -14,7 +14,7 @@ val supabase = createSupabaseClient(
     install(ComposeAuth) {
         googleNativeLogin(
             serverClientId =
-                "433179782438-p68gd5nr62ucsn83tqtove2lhibhcrqi.apps.googleusercontent.com"
+                "433179782438-nsl6671oqkia8ofcqdjm1hde0fhk8k9n.apps.googleusercontent.com"
         )
     }
 }

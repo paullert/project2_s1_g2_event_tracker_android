@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -21,8 +22,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 //import org.springframework.http.HttpMethod
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.Call
+import retrofit2.Response
+import retrofit2.Callback
 
 class GuestHomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -128,6 +137,9 @@ fun AdminHomeScreen(
     onCreateEvent: () -> Unit = {},
     onEditEvent: () -> Unit = {}
 ) {
+    var attendees by remember {
+        mutableStateOf<Int?>(null)
+    }
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFF3F3F3F)
@@ -170,12 +182,21 @@ fun AdminHomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            /*LaunchedEffect(eventId) {
+                try {
+                    attendees = ApiClient.eventApi
+                        .getTotalAttendees(eventId)
+                } catch (exception: Exception) {
+                    println("API error: ${exception.message}")
+                }
+            }*/
+
             EventCard(
                 eventName = "EXAMPLE EVENT",
                 date = "OCT. 14, 2026",
                 time = "3:00PM-8:00PM",
-                attendees = 99,//"/api/v1/events/{eventId}/totalAttendees", //replace with attendee count from
-                onEdit = onEditEvent
+                attendees = 99,//attendees ?: 0,
+                onEdit = {}
             )
         }
     }

@@ -53,6 +53,15 @@ import io.github.jan.supabase.compose.auth.composeAuth
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialResponse
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+//import androidx.credentials.GetGoogleIdOption
+import androidx.credentials.exceptions.GetCredentialException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 
 
 enum class AuthMode {
@@ -232,21 +241,26 @@ fun RuntimeLoginScreen() {
     } else {
         val googleLogin = supabase.composeAuth.rememberSignInWithGoogle(
             onResult = { result ->
+                println("GOOGLE RESULT TYPE: ${result::class.qualifiedName}")
+                println("GOOGLE RESULT: $result")
+
                 when (result) {
                     is NativeSignInResult.Success -> {
+                        println("Google login successful")
                         isLoggedIn = true
                     }
 
                     is NativeSignInResult.Error -> {
-                        println("Google login failed")
+                        println("Google login error: ${result.exception}")
+                        //println("Message: ${result.exception.message}")
                     }
 
                     is NativeSignInResult.NetworkError -> {
-                        println("Network error")
+                        println("Google network error")
                     }
 
                     NativeSignInResult.ClosedByUser -> {
-                        println("Login cancelled")
+                        println("Google flow closed")
                     }
                 }
             }
@@ -269,27 +283,69 @@ fun RuntimeLoginScreen() {
             onGoogleLogin = {
                 googleLogin.startFlow()
                 //isLoggedIn = true
+                //signInWithGoogle()
             }
         )
     }
 }
 
-/*@Composable
+    /*private fun signInWithGoogle() {
+    val credentialManager = CredentialManager.create(androidContext)
+
+
+    val googleIdOption = GetGoogleIdOption.Builder()
+        .setFilterByAuthorizedAccounts(false) // Use false to allow selecting any Google account
+        .setServerClientId("YOUR_SERVER_CLIENT_ID") // From Google Cloud Console
+        .build()
+
+    val request = GetCredentialRequest.Builder()
+        .addCredentialOption(googleIdOption)
+        .build()
+
+    lifecycleScope.launch {
+        try {
+            val result = credentialManager.getCredential(androidContext, request)
+            handleSignIn(result)
+        } catch (e: GetCredentialException) {
+            // Handle error
+        }
+    }
+}
+
+private fun handleSignIn(result: GetCredentialResponse) {
+    val credential = result.credential
+    if (credential is CustomCredential &&
+        credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+
+        try {
+            val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+            val idToken = googleIdTokenCredential.idToken
+
+            // Send idToken to your backend for verification
+            sendTokenToBackend(idToken)
+        } catch (e: GoogleIdTokenParsingException) {
+            // Handle parsing error
+        }
+    }
+}*/
+
+    /*@Composable
 private fun LoginButton(
 
 )*/
 
-/*@Composable
+    /*@Composable
 fun Context(message: String, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(this, message, duration).show()
 }*/
 // Usage: context.toast("Message")
 
-@Preview(showBackground = true)
-@Composable
-fun MainPageComposablePreview() {
-    MainPageComposable(
-        onLogin = { _, _ -> },
-        onGoogleLogin = {}
-    )
-}
+
+    @Preview(showBackground = true)
+    @Composable
+    fun MainPageComposablePreview() {
+        MainPageComposable(
+            onLogin = { _, _ -> },
+            onGoogleLogin = {}
+        )
+    }
