@@ -21,19 +21,17 @@ import androidx.compose.ui.tooling.preview.Preview
 
 data class EventInvitations(
     val inviteId: Long,
+    val eventId: Long,
     val eventName: String,
     val eventDescription: String,
-    val status: String
+    val startsOn: String?,
+    val status: String,
+    val invitedAt: String?
 )
 
 @Composable
 fun InvitationsScreen(){
-    //temporary fake data to see our screen
-    val invitations = listOf(
-        EventInvitations(1, "Team Meeting", "Weekly project meeting", "PENDING"),
-        EventInvitations(2, "Workshop", "Introduction to Android", "PENDING"),
-        EventInvitations(3, "Study Session", "Group study event", "ACCEPTED")
-    )
+    val invitations = emptyList<EventInvitations>()
 
     Column(
         modifier = Modifier.fillMaxSize().background(Color(0xFF383838)).padding(16.dp)
