@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+//import org.springframework.http.HttpMethod
 
 class GuestHomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,7 +115,7 @@ fun GuestHomeScreen(
                 eventName = "EXAMPLE EVENT",
                 date = "OCT. 14, 2026",
                 time = "3:00PM-8:00PM",
-                attendees = 99, //replace with attendee count from
+                attendees = 99,//HttpMethod.GET("/api/v1/events/{eventId}/totalAttendees"),
                 onEditResponse = onEditResponse,
                 onDetails = onDetails
             )
@@ -173,7 +174,7 @@ fun AdminHomeScreen(
                 eventName = "EXAMPLE EVENT",
                 date = "OCT. 14, 2026",
                 time = "3:00PM-8:00PM",
-                attendees = 99, //replace with attendee count from
+                attendees = 99,//"/api/v1/events/{eventId}/totalAttendees", //replace with attendee count from
                 onEdit = onEditEvent
             )
         }

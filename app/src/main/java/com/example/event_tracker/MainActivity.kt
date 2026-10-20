@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.widget.EditText
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -51,6 +52,7 @@ import io.github.jan.supabase.compose.auth.composable.rememberSignInWithGoogle
 import io.github.jan.supabase.compose.auth.composeAuth
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 
 
 enum class AuthMode {
@@ -76,8 +78,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainPageComposable(
     modifier: Modifier = Modifier,
-    onLogin: () -> Unit = {},
-    onGoogleLogin: () -> Unit = {},
+    onLogin: (String, String) -> Unit = { _, _ -> },
+    onGoogleLogin: () -> Unit = {}
     //RuntimeLoginScreen: () -> Unit = {}
 
 ) {
@@ -121,8 +123,13 @@ fun MainPageComposable(
 
             Spacer(modifier = Modifier.height(38.dp))
 
-            var username = ""
-            var password = ""
+            var username by rememberSaveable {
+                mutableStateOf("")
+            }
+
+            var password by rememberSaveable {
+                mutableStateOf("")
+            }
 
             OutlinedTextField(
                 value = username,
@@ -170,7 +177,7 @@ fun MainPageComposable(
             Spacer(modifier = Modifier.height(28.dp))
 
             Button(
-                onClick = onLogin,
+                onClick = { onLogin(username, password) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
@@ -208,6 +215,7 @@ fun GoogleLoginButton(
 
 @Composable
 fun RuntimeLoginScreen() {
+    val androidContext = LocalContext.current
     var isLoggedIn by rememberSaveable {
         mutableStateOf(false)
     }
@@ -245,13 +253,22 @@ fun RuntimeLoginScreen() {
         )
 
         MainPageComposable(
-            onLogin = {
-                // After successful email/password authentication:
+            onLogin = { username, password ->
+                if (username.isBlank() || password.isBlank()) {
+                    Toast.makeText(
+                        androidContext,
+                        "Username and password cannot be empty.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    isLoggedIn = true
+                }
+                // Will implement check for correct login details after api is connected.
                 isLoggedIn = true
             },
             onGoogleLogin = {
                 googleLogin.startFlow()
-                isLoggedIn = true
+                //isLoggedIn = true
             }
         )
     }
@@ -262,11 +279,17 @@ private fun LoginButton(
 
 )*/
 
+/*@Composable
+fun Context(message: String, duration: Int = Toast.LENGTH_SHORT) {
+    Toast.makeText(this, message, duration).show()
+}*/
+// Usage: context.toast("Message")
+
 @Preview(showBackground = true)
 @Composable
 fun MainPageComposablePreview() {
     MainPageComposable(
-        onLogin = {},
+        onLogin = { _, _ -> },
         onGoogleLogin = {}
     )
 }

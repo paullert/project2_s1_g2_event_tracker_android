@@ -86,7 +86,7 @@ class AdminHomeActivity : ComponentActivity() {
 //                eventName = "EXAMPLE EVENT",
 //                date = "OCT. 14, 2026",
 //                time = "3:00PM-8:00PM",
-//                attendees = 99, //replace with attendee count from
+//                attendees = "/api/v1/events/{eventId}/totalAttendees", //replace with attendee count from
 //                onEdit = onEditEvent
 //            )
 //        }
