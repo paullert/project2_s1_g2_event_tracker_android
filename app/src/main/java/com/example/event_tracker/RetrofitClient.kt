@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
 
-object ApiClient {
+object RetrofitClient {
 
     private const val BASE_URL =
         "https://your-backend-domain.com/" //would put render link here

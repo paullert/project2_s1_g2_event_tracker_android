@@ -51,6 +51,8 @@ import io.github.jan.supabase.compose.auth.composable.NativeSignInResult
 import io.github.jan.supabase.compose.auth.composable.rememberSignInWithGoogle
 import io.github.jan.supabase.compose.auth.composeAuth
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.credentials.CustomCredential
@@ -62,6 +64,7 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import kotlinx.coroutines.launch
 
 
 enum class AuthMode {
@@ -224,7 +227,12 @@ fun GoogleLoginButton(
 
 @Composable
 fun RuntimeLoginScreen() {
-    val androidContext = LocalContext.current
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val credentialManager = remember {
+        CredentialManager.create(context)
+    }
+
     var isLoggedIn by rememberSaveable {
         mutableStateOf(false)
     }
@@ -239,55 +247,74 @@ fun RuntimeLoginScreen() {
             onPublicEvents = {}
         )
     } else {
-        val googleLogin = supabase.composeAuth.rememberSignInWithGoogle(
-            onResult = { result ->
-                println("GOOGLE RESULT TYPE: ${result::class.qualifiedName}")
-                println("GOOGLE RESULT: $result")
-
-                when (result) {
-                    is NativeSignInResult.Success -> {
-                        println("Google login successful")
-                        isLoggedIn = true
-                    }
-
-                    is NativeSignInResult.Error -> {
-                        println("Google login error: ${result.exception}")
-                        //println("Message: ${result.exception.message}")
-                    }
-
-                    is NativeSignInResult.NetworkError -> {
-                        println("Google network error")
-                    }
-
-                    NativeSignInResult.ClosedByUser -> {
-                        println("Google flow closed")
-                    }
-                }
-            }
-        )
-
         MainPageComposable(
             onLogin = { username, password ->
                 if (username.isBlank() || password.isBlank()) {
                     Toast.makeText(
-                        androidContext,
+                        context,
                         "Username and password cannot be empty.",
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
+                    // Call your backend username/password API here
                     isLoggedIn = true
                 }
-                // Will implement check for correct login details after api is connected.
-                isLoggedIn = true
             },
             onGoogleLogin = {
-                googleLogin.startFlow()
-                //isLoggedIn = true
-                //signInWithGoogle()
+                scope.launch {
+                    try {
+                        val googleOption = GetGoogleIdOption.Builder()
+                            .setServerClientId(
+                                "433179782438-nsl6671oqkia8ofcqdjm1hde0fhk8k9n.apps.googleusercontent.com"
+                            )
+                            .setFilterByAuthorizedAccounts(false)
+                            .build()
+
+                        val request = GetCredentialRequest(
+                            listOf(googleOption)
+                        )
+
+                        val result = credentialManager.getCredential(
+                            context = context,
+                            request = request
+                        )
+
+                        val credential = result.credential
+
+                        if (
+                            credential is CustomCredential &&
+                            credential.type ==
+                            GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+                        ) {
+                            val googleCredential =
+                                GoogleIdTokenCredential.createFrom(
+                                    credential.data
+                                )
+
+                            val response =
+                                ApiClient.authApi.loginWithGoogle(
+                                    GoogleLoginRequest(
+                                        idToken = googleCredential.idToken
+                                    )
+                                )
+
+                            println("Logged in as ${response.email}")
+                            isLoggedIn = true
+                        }
+
+                    } catch (exception: Exception) {
+                        Toast.makeText(
+                            context,
+                            "Google login failed: ${exception.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
             }
         )
     }
 }
+
 
     /*private fun signInWithGoogle() {
     val credentialManager = CredentialManager.create(androidContext)
@@ -340,7 +367,6 @@ fun Context(message: String, duration: Int = Toast.LENGTH_SHORT) {
 }*/
 // Usage: context.toast("Message")
 
-
     @Preview(showBackground = true)
     @Composable
     fun MainPageComposablePreview() {
@@ -349,3 +375,4 @@ fun Context(message: String, duration: Int = Toast.LENGTH_SHORT) {
             onGoogleLogin = {}
         )
     }
+
