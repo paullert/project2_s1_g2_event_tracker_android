@@ -1,6 +1,10 @@
 package com.example.event_tracker
 
-import android.view.RoundedCorner
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -19,19 +23,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 
-data class EventInvitations(
-    val inviteId: Long,
-    val eventId: Long,
-    val eventName: String,
-    val eventDescription: String,
-    val startsOn: String?,
-    val status: String,
-    val invitedAt: String?
-)
 
 @Composable
 fun InvitationsScreen(){
-    val invitations = emptyList<EventInvitations>()
+    var invitations by remember{
+        mutableStateOf<List<InviteResponse>>(emptyList())
+    }
+
+    var errorMessage by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    LaunchedEffect(Unit) {
+        try{
+            invitations = RetrofitClient.inviteApi.getMyInvites()
+        } catch (e: Exception) {
+            errorMessage = e.message ?: "Failed to load invitations"
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().background(Color(0xFF383838)).padding(16.dp)
@@ -60,7 +69,7 @@ fun InvitationsScreen(){
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        Text(text = invitation.eventDescription, textAlign = TextAlign.Center)
+                        Text(text = invitation.eventDescription ?: "", textAlign = TextAlign.Center)
 
                         Spacer(modifier = Modifier.height(8.dp))
 

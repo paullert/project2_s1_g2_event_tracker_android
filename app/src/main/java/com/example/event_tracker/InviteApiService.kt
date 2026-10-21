@@ -5,5 +5,5 @@ import retrofit2.http.Path
 
 interface InviteApiService{
     @GET("api/v1/users/me/invites")
-    suspend fun getMyInvites(): List<EventInvitations>
+    suspend fun getMyInvites(): List<InviteResponse>
 }
