@@ -2,4 +2,5 @@
     <string name="app_name">Event_Tracker</string>
     <string name="username_label">Enter Username</string>
     <string name="password_label">Enter Password</string>
+    <string name="welcome_admin">WELCOME, ADMIN!</string>
 </resources>
