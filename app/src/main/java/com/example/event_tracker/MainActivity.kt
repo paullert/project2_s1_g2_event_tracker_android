@@ -257,7 +257,7 @@ fun RuntimeLoginScreen() {
                     ).show()
                 } else {
                     // Call your backend username/password API here
-                    isLoggedIn = true
+                    //isLoggedIn = true
                 }
             },
             onGoogleLogin = {
@@ -291,14 +291,16 @@ fun RuntimeLoginScreen() {
                                     credential.data
                                 )
 
-                            val response =
+                            val response = {}
+                                println("Google credential received")
                                 ApiClient.authApi.loginWithGoogle(
                                     GoogleLoginRequest(
                                         idToken = googleCredential.idToken
                                     )
                                 )
 
-                            println("Logged in as ${response.email}")
+
+                            println("Logged in")
                             isLoggedIn = true
                         }
 

@@ -44,6 +44,10 @@ interface AuthApi {
 
 object ApiClient {
 
+    val eventApi: Any
+        get() {
+            TODO()
+        }
     val authApi: AuthApi by lazy {
         Retrofit.Builder()
             .baseUrl(BACKEND_URL)
