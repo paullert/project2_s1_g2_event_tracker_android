@@ -22,6 +22,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 
 
 @Composable
@@ -33,6 +35,8 @@ fun InvitationsScreen(){
     var errorMessage by remember {
         mutableStateOf<String?>(null)
     }
+
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         try{
@@ -52,6 +56,14 @@ fun InvitationsScreen(){
         )
 
         Spacer(modifier = Modifier.height(20.dp))
+
+        if(errorMessage != null){
+            Text(
+                text = errorMessage ?: "",
+                color = Color.Red,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+        }
 
         LazyColumn{
             items(invitations){ invitation ->
@@ -84,7 +96,25 @@ fun InvitationsScreen(){
                             ) {
                                 Button(
                                     onClick = {
-                                        //logic to accept invitation
+                                        scope.launch {
+                                            try{
+                                                val updatedInvite = RetrofitClient.inviteApi.respondToInvite(
+                                                    eventId = invitation.eventId,
+                                                    request = MyInviteRequest("ACCEPTED")
+                                                )
+
+                                                invitations = invitations.map{
+                                                    if(it.eventId == updatedInvite.eventId){
+                                                        updatedInvite
+                                                    }else{
+                                                        it
+                                                    }
+                                                }
+                                                errorMessage = null
+                                            } catch (e: Exception){
+                                                errorMessage = "Failed to accept invitation"
+                                            }
+                                        }
                                     }
                                 ) {
                                     Text("Accept")
@@ -93,7 +123,25 @@ fun InvitationsScreen(){
 
                                 Button(
                                     onClick = {
-                                        //logic to decline invitation
+                                        scope.launch {
+                                            try{
+                                                val updatedInvite = RetrofitClient.inviteApi.respondToInvite(
+                                                    eventId = invitation.eventId,
+                                                    request = MyInviteRequest("DECLINED")
+                                                )
+
+                                                invitations = invitations.map{
+                                                    if(it.eventId == updatedInvite.eventId){
+                                                        updatedInvite
+                                                    }else{
+                                                        it
+                                                    }
+                                                }
+                                                errorMessage = null
+                                            } catch (e: Exception){
+                                                errorMessage = "Failed to decline invitation"
+                                            }
+                                        }
                                     }
                                 ) {
                                     Text("Decline")

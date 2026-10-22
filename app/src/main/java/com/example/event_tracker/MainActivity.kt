@@ -81,7 +81,27 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            RuntimeLoginScreen()
+            var showInvitations by remember {
+                mutableStateOf(false)
+            }
+
+            if (showInvitations) {
+                InvitationsScreen()
+            } else {
+                Column {
+                    Button(
+                        onClick = { showInvitations = true },
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text("My Invitations")
+                    }
+
+                    AdminHomeScreen(
+                        onCreateEvent = {},
+                        onEditEvent = {}
+                    )
+                }
+            }
         }
     }
 }
@@ -237,6 +257,10 @@ fun RuntimeLoginScreen() {
         mutableStateOf(false)
     }
 
+    var googleIdToken by remember {
+        mutableStateOf<String?>(null)
+    }
+
     if (isLoggedIn) {
         GuestHomeScreen(
             onManageScreen = {
@@ -291,16 +315,12 @@ fun RuntimeLoginScreen() {
                                     credential.data
                                 )
 
-                            val response = {}
-                                println("Google credential received")
-                                ApiClient.authApi.loginWithGoogle(
-                                    GoogleLoginRequest(
-                                        idToken = googleCredential.idToken
-                                    )
-                                )
+                            println("Google credential received")
+                            val idToken = googleCredential.idToken
+                            googleIdToken = idToken
 
-
-                            println("Logged in")
+                            RetrofitClient.googleIdToken = idToken
+                            println("Google ID token obtained")
                             isLoggedIn = true
                         }
 
