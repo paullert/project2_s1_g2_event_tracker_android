@@ -36,7 +36,7 @@ fun InvitationsScreen(){
 
     LaunchedEffect(Unit) {
         try{
-            invitations = RetrofitClient.inviteApi.getMyInvites()
+            invitations = RetrofitClient.inviteApi.getMyInvites().content
         } catch (e: Exception) {
             errorMessage = e.message ?: "Failed to load invitations"
         }

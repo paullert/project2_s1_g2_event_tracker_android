@@ -1,7 +1,7 @@
 package com.example.event_tracker
 
 data class InviteResponse(
-    val inviteId: Long,
+    val userId: Long,
     val eventId: Long,
     val eventName: String,
     val eventDescription: String?,
