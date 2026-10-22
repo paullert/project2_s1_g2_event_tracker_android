@@ -1,32 +1,39 @@
 package com.example.event_tracker
 
-import retrofit2.Response
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Path
 
-object RetrofitClient {
+object RetrofitClient{
 
-    private const val BASE_URL =
-        "https://your-backend-domain.com/" //would put render link here
+    var googleIdToken: String? = null
+    private const val BASE_URL = "http://10.0.2.2:8080/"
+    private val client = OkHttpClient.Builder()
+        .addInterceptor { chain ->
+            val requestBuilder = chain.request().newBuilder()
 
-    val eventApi: EventApi by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(EventApi::class.java)
+            googleIdToken?.let { token ->
+                requestBuilder.addHeader(
+                    "Authorization",
+                    "Bearer $token"
+                )
+            }
+
+            chain.proceed(requestBuilder.build())
+        }
+        .build()
+
+    private val retrofit = Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .client(client)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    val eventApi: EventApi by lazy{
+        retrofit.create(EventApi::class.java)
+    }
+
+    val inviteApi: InviteApiService by lazy{
+        retrofit.create(InviteApiService::class.java)
     }
 }
-
-interface EventApi {
-    @GET("api/v1/events/{eventId}/totalAttendees")
-    suspend fun getTotalAttendees(
-        @Path("eventId") eventId: Long
-    ): Int
-    @GET("data")
-    suspend fun getData(): Response<DataModel>
-}
-
-annotation class DataModel

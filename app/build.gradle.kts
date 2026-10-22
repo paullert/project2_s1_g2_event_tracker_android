@@ -18,6 +18,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders["appAuthRedirectScheme"] = "com.example.event_tracker"
     }
 
     buildTypes {
@@ -66,5 +68,5 @@ dependencies {
     implementation("androidx.credentials:credentials:1.6.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.6.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.2.1")
-    implementation("net.openid:appauth:1.4.0")
+    implementation("net.openid:appauth:0.11.1")
     }

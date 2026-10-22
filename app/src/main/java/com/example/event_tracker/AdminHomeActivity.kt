@@ -4,7 +4,10 @@ package com.example.event_tracker
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-//import androidx.compose.foundation.background
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -25,15 +28,31 @@ class AdminHomeActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            AdminHomeScreen(
-                onCreateEvent = {
-                    // Navigate to Create Event screen
+            var showInvitations by remember {
+                mutableStateOf(false)
+            }
 
-                },
-                onEditEvent = {
-                    // Navigate to Edit Event screen
+            if (showInvitations) {
+                InvitationsScreen()
+            } else {
+                Column {
+                    Button(
+                        onClick = { showInvitations = true },
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text("My Invitations")
+                    }
+
+                    AdminHomeScreen(
+                        onCreateEvent = {
+                            // Navigate to Create Event screen
+                        },
+                        onEditEvent = {
+                            // Navigate to Edit Event screen
+                        }
+                    )
                 }
-            )
+            }
         }
     }
 }
