@@ -21,8 +21,11 @@ jobs:
 
       - name: Install Android platform
         run: |
-          yes | sdkmanager --licenses > /dev/null
-          sdkmanager "platforms;android-37"
+          sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          sdkmanager_path="$(find "$sdk_root/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
+          test -n "$sdkmanager_path"
+          yes | "$sdkmanager_path" --licenses > /dev/null
+          "$sdkmanager_path" "platforms;android-37"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
