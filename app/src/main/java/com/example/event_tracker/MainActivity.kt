@@ -1,14 +1,11 @@
 package com.example.event_tracker
 
-import android.app.AlertDialog
-import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -17,11 +14,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -31,9 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontFamily.Companion.Serif
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -41,34 +33,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import io.github.jan.supabase.auth.Auth
-import io.github.jan.supabase.createSupabaseClient
-import io.github.jan.supabase.compose.auth.composable.NativeSignInResult
-import io.github.jan.supabase.compose.auth.composable.rememberSignInWithGoogle
-import io.github.jan.supabase.compose.auth.composeAuth
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.credentials.CustomCredential
-import androidx.credentials.GetCredentialResponse
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 //import androidx.credentials.GetGoogleIdOption
-import androidx.credentials.exceptions.GetCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import kotlinx.coroutines.launch
+import net.openid.appauth.AuthorizationService
+import androidx.core.content.edit
+import androidx.lifecycle.lifecycleScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 
 enum class AuthMode {
-    Login,
     HomePage,
     ManageEvents,
     Details,
@@ -77,11 +61,34 @@ enum class AuthMode {
 
 class MainActivity : ComponentActivity() {
 
+    private lateinit var authorizationService: AuthorizationService
+
+    var loggedIn by mutableStateOf(false)
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        authorizationService = AuthorizationService(this)
+
+
         setContent {
-            var showInvitations by remember {
+            if (loggedIn) {
+                GuestHomeScreen(
+                    onManageScreen = {
+                        // Navigate to AdminHomeScreen
+                    },
+                    onEditResponse = {},
+                    onDetails = {},
+                    onPublicEvents = {}
+                )
+            } else {
+                RuntimeLoginScreen(
+                    onGoogleLogin = {
+                        GooglePkceManager(this).startLogin()
+                    }
+                )
+                /*var showInvitations by remember {
                 mutableStateOf(false)
             }
 
@@ -101,10 +108,114 @@ class MainActivity : ComponentActivity() {
                         onEditEvent = {}
                     )
                 }
+            }*/
+            }
+        }
+
+        handleAuthorizationResponse(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleAuthorizationResponse(intent)
+    }
+
+    private fun handleAuthorizationResponse(intent: Intent?) {
+        if (intent == null) return
+
+        val response =
+            net.openid.appauth.AuthorizationResponse
+                .fromIntent(intent)
+
+        val exception =
+            net.openid.appauth.AuthorizationException
+                .fromIntent(intent as Intent?)
+
+        if (exception != null) {
+            Toast.makeText(
+                this,
+                "Google login failed: ${exception.errorDescription}",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+        if (response != null) {
+            val authorizationCode = response.authorizationCode
+            val codeVerifier = response.request.codeVerifier
+            val redirectUri = response.request.redirectUri.toString()
+
+            if (authorizationCode == null || codeVerifier == null) {
+                Toast.makeText(
+                    this,
+                    "Missing authorization information.",
+                    Toast.LENGTH_LONG
+                ).show()
+                return
+            }
+
+            exchangeCodeWithBackend(
+                authorizationCode,
+                codeVerifier,
+                redirectUri
+            )
+        }
+    }
+
+    private fun exchangeCodeWithBackend(
+        code: String,
+        codeVerifier: String,
+        redirectUri: String
+    ) {
+        lifecycleScope.launch {
+            try {
+                val response = ApiClient.authApi.exchangeGoogleCode(
+                    GooglePkceRequest(
+                        code = code,
+                        codeVerifier = codeVerifier,
+                        redirectUri = redirectUri
+                    )
+                )
+
+                getSharedPreferences(
+                    "auth",
+                    MODE_PRIVATE
+                )
+                    .edit {
+                        putString("access_token", response.accessToken)
+                    }
+                loggedIn = true
+
+                Toast.makeText(
+                    this@MainActivity,
+                    "Login successful",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                // Navigate to your guest/admin screen here.
+                // Example:
+                // setContent { GuestHomeScreen(...) }
+                setContent {
+                    GuestHomeScreen()
+                }
+
+            } catch (exception: Exception) {
+                Toast.makeText(
+                    this@MainActivity,
+                    "Login failed: ${exception.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
+
+    override fun onDestroy() {
+        authorizationService.dispose()
+        super.onDestroy()
+    }
 }
+
 
 
 @Composable
@@ -246,95 +357,25 @@ fun GoogleLoginButton(
 }
 
 @Composable
-fun RuntimeLoginScreen() {
+fun RuntimeLoginScreen(
+    onGoogleLogin: () -> Unit
+) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val credentialManager = remember {
-        CredentialManager.create(context)
-    }
 
-    var isLoggedIn by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    var googleIdToken by remember {
-        mutableStateOf<String?>(null)
-    }
-
-    if (isLoggedIn) {
-        GuestHomeScreen(
-            onManageScreen = {
-                // Navigate to admin screen
-            },
-            onEditResponse = {},
-            onDetails = {},
-            onPublicEvents = {}
-        )
-    } else {
-        MainPageComposable(
-            onLogin = { username, password ->
-                if (username.isBlank() || password.isBlank()) {
-                    Toast.makeText(
-                        context,
-                        "Username and password cannot be empty.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    // Call your backend username/password API here
-                    //isLoggedIn = true
-                }
-            },
-            onGoogleLogin = {
-                scope.launch {
-                    try {
-                        val googleOption = GetGoogleIdOption.Builder()
-                            .setServerClientId(
-                                "433179782438-nsl6671oqkia8ofcqdjm1hde0fhk8k9n.apps.googleusercontent.com"
-                            )
-                            .setFilterByAuthorizedAccounts(false)
-                            .build()
-
-                        val request = GetCredentialRequest(
-                            listOf(googleOption)
-                        )
-
-                        val result = credentialManager.getCredential(
-                            context = context,
-                            request = request
-                        )
-
-                        val credential = result.credential
-
-                        if (
-                            credential is CustomCredential &&
-                            credential.type ==
-                            GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
-                        ) {
-                            val googleCredential =
-                                GoogleIdTokenCredential.createFrom(
-                                    credential.data
-                                )
-
-                            println("Google credential received")
-                            val idToken = googleCredential.idToken
-                            googleIdToken = idToken
-
-                            RetrofitClient.googleIdToken = idToken
-                            println("Google ID token obtained")
-                            isLoggedIn = true
-                        }
-
-                    } catch (exception: Exception) {
-                        Toast.makeText(
-                            context,
-                            "Google login failed: ${exception.message}",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                }
+    MainPageComposable(
+        onLogin = { username, password ->
+            if (username.isBlank() || password.isBlank()) {
+                Toast.makeText(
+                    context,
+                    "Username and password cannot be empty.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                // Add username/password API call here
             }
-        )
-    }
+        },
+        onGoogleLogin = onGoogleLogin
+    )
 }
 
 

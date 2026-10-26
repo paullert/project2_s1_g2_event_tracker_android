@@ -3,6 +3,8 @@ package com.example.event_tracker
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import okhttp3.Interceptor
+import android.content.Context
 
 object RetrofitClient{
 
@@ -35,5 +37,22 @@ object RetrofitClient{
 
     val inviteApi: InviteApiService by lazy{
         retrofit.create(InviteApiService::class.java)
+    }
+
+    fun eventApi(context: Context): EventApi {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(
+                OkHttpClient.Builder()
+                    .addInterceptor(
+                        AuthInterceptor(context.applicationContext)
+                    )
+                    .build()
+            )
+            .addConverterFactory(
+                GsonConverterFactory.create()
+            )
+            .build()
+            .create(EventApi::class.java)
     }
 }
