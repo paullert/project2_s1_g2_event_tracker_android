@@ -69,4 +69,5 @@ dependencies {
     implementation("androidx.credentials:credentials-play-services-auth:1.6.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.2.1")
     implementation("net.openid:appauth:0.11.1")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     }
