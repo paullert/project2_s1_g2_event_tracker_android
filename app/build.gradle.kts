@@ -1,14 +1,15 @@
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
 
+val googleClientId = property("GOOGLE_CLIENT_ID") as String
+val apiBaseUrl = property("API_BASE_URL") as String
+val googleRedirectScheme = "com.googleusercontent.apps.${googleClientId.removeSuffix(".apps.googleusercontent.com")}"
+
 android {
     namespace = "com.example.event_tracker"
-    compileSdk {
-        version = release(37)
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.example.event_tracker"
@@ -19,10 +20,17 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        manifestPlaceholders["appAuthRedirectScheme"] = "com.example.event_tracker"
+        manifestPlaceholders["appAuthRedirectScheme"] = googleRedirectScheme
+        manifestPlaceholders["usesCleartextTraffic"] = "false"
+        buildConfigField("String", "GOOGLE_CLIENT_ID", "\"$googleClientId\"")
+        buildConfigField("String", "GOOGLE_REDIRECT_URI", "\"$googleRedirectScheme:/oauth2redirect\"")
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
     buildTypes {
+        debug {
+            manifestPlaceholders["usesCleartextTraffic"] = "true"
+        }
         release {
             optimization {
                 enable = false
@@ -34,6 +42,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }
@@ -49,25 +58,19 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+    implementation(libs.appauth)
+    implementation(libs.okhttp)
+
     testImplementation(libs.junit)
+    testImplementation(libs.okhttp.mockwebserver)
+
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
-    implementation(platform("io.github.jan-tennert.supabase:bom:3.8.0"))
-    implementation("io.github.jan-tennert.supabase:auth-kt")
-    implementation("io.github.jan-tennert.supabase:compose-auth")
-    implementation("io.ktor:ktor-client-android:3.6.0")
-    implementation("com.squareup.retrofit2:retrofit:3.0.0")
-    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
-    implementation("androidx.credentials:credentials:1.6.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.6.0")
-    implementation("com.google.android.libraries.identity.googleid:googleid:1.2.1")
-    implementation("net.openid:appauth:0.11.1")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    }
+}

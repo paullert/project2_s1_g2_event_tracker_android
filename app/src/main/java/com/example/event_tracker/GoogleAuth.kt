@@ -1,46 +1,29 @@
 package com.example.event_tracker
 
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
 
-data class GooglePkceRequest(
-    val code: String,
-    val codeVerifier: String,
-    val redirectUri: String
-)
+data class RegisterRequest(val username: String)
 
-data class AuthResponse(
-    val accessToken: String,
-    val email: String?,
-    val name: String?
+data class UserResponse(
+    val userId: Long,
+    val username: String,
+    val email: String,
+    val subject: String,
+    val role: String
 )
 
 interface AuthApi {
-    @POST("auth/google/exchange")
-    suspend fun exchangeGoogleCode(
-        @Body request: GooglePkceRequest
-    ): AuthResponse
+    @GET("auth/me")
+    suspend fun me(): Response<UserResponse>
+
+    @POST("auth/register")
+    suspend fun registerWithGoogle(@Body request: RegisterRequest): Response<UserResponse>
 }
 
 object ApiClient {
-    val eventApi: Any
-        get() {
-            TODO()
-        }
-
-    //val eventApi: Any
-    private const val BASE_URL =
-        "https://project2-s1-g4-event-tracker-api.onrender.com/"
-
-    val authApi: AuthApi by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(
-                GsonConverterFactory.create()
-            )
-            .build()
-            .create(AuthApi::class.java)
-    }
+    val eventApi: EventApi get() = RetrofitClient.eventApi
+    val authApi: AuthApi get() = RetrofitClient.authApi
 }

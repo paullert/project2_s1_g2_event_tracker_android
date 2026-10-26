@@ -25,19 +25,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
-
-private const val BACKEND_BASE_URL = "http://10.0.2.2:8080/"
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 data class CreateEventRequest(
-    val name: String,
-    val date: String,
-    val startTime: String,
-    val endTime: String,
-    val location: String
+    val eventName: String,
+    val eventDescription: String,
+    val startsOn: String,
+    val locationId: Long
 )
 
 interface CreateEventApi {
@@ -48,13 +46,7 @@ interface CreateEventApi {
 }
 
 object CreateEventClient {
-    val api: CreateEventApi by lazy {
-        Retrofit.Builder()
-            .baseUrl(BACKEND_BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(CreateEventApi::class.java)
-    }
+    val api: CreateEventApi get() = RetrofitClient.createEventApi
 }
 
 @Composable
@@ -68,7 +60,7 @@ fun CreateEventScreen(
     var eventName by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf("") }
     var startTime by remember { mutableStateOf("") }
-    var endTime by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var isSaving by remember { mutableStateOf(false) }
 
@@ -108,11 +100,10 @@ fun CreateEventScreen(
         )
 
         OutlinedTextField(
-            value = endTime,
-            onValueChange = { endTime = it },
+            value = description,
+            onValueChange = { description = it },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("End time") },
-            placeholder = { Text("HH:mm") },
+            label = { Text("Description") },
             singleLine = true
         )
 
@@ -120,7 +111,7 @@ fun CreateEventScreen(
             value = location,
             onValueChange = { location = it },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Location") },
+            label = { Text("Location number") },
             singleLine = true
         )
 
@@ -132,7 +123,7 @@ fun CreateEventScreen(
                     eventName.isBlank() ||
                     eventDate.isBlank() ||
                     startTime.isBlank() ||
-                    endTime.isBlank() ||
+                    description.isBlank() ||
                     location.isBlank()
                 ) {
                     Toast.makeText(
@@ -149,15 +140,19 @@ fun CreateEventScreen(
                     try {
                         val response = CreateEventClient.api.createEvent(
                             CreateEventRequest(
-                                name = eventName.trim(),
-                                date = eventDate.trim(),
-                                startTime = startTime.trim(),
-                                endTime = endTime.trim(),
-                                location = location.trim()
+                                eventName = eventName.trim(),
+                                eventDescription = description.trim(),
+                                startsOn = LocalDateTime.parse("${eventDate.trim()}T${startTime.trim()}")
+                                    .atZone(ZoneId.of("America/Los_Angeles"))
+                                    .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                                locationId = location.trim().toLong().also {
+                                    require(it > 0) { "Enter a valid location number" }
+                                }
                             )
                         )
 
                         if (!response.isSuccessful) {
+                            response.errorBody()?.close()
                             throw IllegalStateException(
                                 "Server returned ${response.code()}"
                             )

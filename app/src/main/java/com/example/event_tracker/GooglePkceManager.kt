@@ -1,56 +1,33 @@
 package com.example.event_tracker
 
-import android.content.Context
 import android.content.Intent
-import android.net.Uri
+import androidx.core.net.toUri
 import net.openid.appauth.AuthorizationRequest
 import net.openid.appauth.AuthorizationService
 import net.openid.appauth.AuthorizationServiceConfiguration
 import net.openid.appauth.CodeVerifierUtil
 import net.openid.appauth.ResponseTypeValues
-import androidx.core.net.toUri
 
-class GooglePkceManager(
-    private val context: Context
-) {
-    companion object {
-        const val REQUEST_CODE = 1001
-
-        private const val CLIENT_ID =
-            "433179782438-nsl6671oqkia8ofcqdjm1hde0fhk8k9n.apps.googleusercontent.com"
-
-        private const val REDIRECT_URI =
-            "https://project2-s1-g4-event-tracker-api.onrender.com/oauth2redirect"
+class GooglePkceManager(private val authorizationService: AuthorizationService) {
+    fun createLoginIntent(): Intent {
+        return authorizationService.getAuthorizationRequestIntent(createAuthorizationRequest())
     }
 
-    private val configuration =
-        AuthorizationServiceConfiguration(
+    fun createAuthorizationRequest(): AuthorizationRequest {
+        val configuration = AuthorizationServiceConfiguration(
             "https://accounts.google.com/o/oauth2/v2/auth".toUri(),
-            "https://project2-s1-g4-event-tracker-api.onrender.com/oauth2redirect".toUri()
+            "https://oauth2.googleapis.com/token".toUri()
         )
-
-    fun startLogin() {
-        val verifier =
-            CodeVerifierUtil.generateRandomCodeVerifier()
-
-        val request = AuthorizationRequest.Builder(
+        return AuthorizationRequest.Builder(
             configuration,
-            CLIENT_ID,
+            BuildConfig.GOOGLE_CLIENT_ID,
             ResponseTypeValues.CODE,
-            REDIRECT_URI.toUri()
+            BuildConfig.GOOGLE_REDIRECT_URI.toUri()
         )
             .setScope("openid email profile")
-            .setCodeVerifier(verifier)
+            .setCodeVerifier(CodeVerifierUtil.generateRandomCodeVerifier())
+            .setPrompt("consent select_account")
+            .setAdditionalParameters(mapOf("access_type" to "offline"))
             .build()
-
-        val authorizationService =
-            AuthorizationService(context)
-
-        val intent =
-            authorizationService.getAuthorizationRequestIntent(request)
-
-        if (context is android.app.Activity) {
-            context.startActivityForResult(intent, REQUEST_CODE)
-        }
     }
 }
