@@ -25,7 +25,10 @@ jobs:
           sdkmanager_path="$(find "$sdk_root/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
           test -n "$sdkmanager_path"
           yes | "$sdkmanager_path" --licenses > /dev/null
-          "$sdkmanager_path" "platforms;android-37"
+          "$sdkmanager_path" "platforms;android-37.0"
+          if [ ! -e "$sdk_root/platforms/android-37" ]; then
+            ln -s android-37.0 "$sdk_root/platforms/android-37"
+          fi
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
