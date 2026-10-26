@@ -1,6 +1,7 @@
 package com.example.event_tracker
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -50,6 +51,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.net.toUri
 
 
 enum class AuthMode {
@@ -85,9 +87,18 @@ class MainActivity : ComponentActivity() {
             } else {
                 RuntimeLoginScreen(
                     onGoogleLogin = {
-                        GooglePkceManager(this).startLogin()
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            "https://project2-s1-g4-event-tracker-api.onrender.com/oauth2/start".toUri()
+                        )
+
+                        startActivity(intent)
                     }
                 )
+            }
+
+            handleAuthorizationResponse(intent)                    }
+
                 /*var showInvitations by remember {
                 mutableStateOf(false)
             }
@@ -109,8 +120,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }*/
-            }
-        }
+
 
         handleAuthorizationResponse(intent)
     }

@@ -30,8 +30,9 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:scheme="com.example.event_tracker"
-                    android:host="oauth2redirect" />
+                    android:scheme="https"
+                    android:host="project2-s1-g4-event-tracker-api.onrender.com"
+                    android:pathPrefix="/auth/app-callback" />
             </intent-filter>
         </activity>
     </application>
