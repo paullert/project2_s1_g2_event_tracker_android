@@ -1,6 +1,15 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    id("dev.detekt")
+}
+
+
+
+detekt {
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+    ignoreFailures = false
 }
 
 val googleClientId = property("GOOGLE_CLIENT_ID") as String

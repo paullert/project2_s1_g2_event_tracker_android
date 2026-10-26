@@ -72,7 +72,8 @@ fun InvitationsScreen(){
                     shape = RoundedCornerShape(16.dp)
 
                 ) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = invitation.eventName,
                             fontSize = 22.sp,
