@@ -1,6 +1,5 @@
 package com.example.event_tracker
 
-import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 
@@ -10,8 +9,15 @@ interface EventApi{
         @Path("eventId") eventId: Long
     ): Int
 
-    @GET("data")
-    suspend fun getData(): Response<DataModel>
+    @GET("api/v1/events")
+    suspend fun getPublicEvents(): EventPageResponse
 }
 
-annotation class DataModel
+data class EventPageResponse(val content: List<ApiEvent>)
+
+data class ApiEvent(
+    val eventId: Long,
+    val eventName: String,
+    val startsOn: String,
+    val locationId: Long?
+)

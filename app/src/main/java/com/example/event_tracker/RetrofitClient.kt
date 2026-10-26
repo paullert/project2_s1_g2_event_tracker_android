@@ -3,56 +3,25 @@ package com.example.event_tracker
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import okhttp3.Interceptor
-import android.content.Context
+import java.util.concurrent.TimeUnit
 
-object RetrofitClient{
-
-    var googleIdToken: String? = null
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+object RetrofitClient {
     private val client = OkHttpClient.Builder()
-        .addInterceptor { chain ->
-            val requestBuilder = chain.request().newBuilder()
-
-            googleIdToken?.let { token ->
-                requestBuilder.addHeader(
-                    "Authorization",
-                    "Bearer $token"
-                )
-            }
-
-            chain.proceed(requestBuilder.build())
-        }
+        .addInterceptor(AuthInterceptor())
+        .authenticator(TokenAuthenticator())
+        .connectTimeout(20, TimeUnit.SECONDS)
+        .readTimeout(90, TimeUnit.SECONDS) // A hosted API may need time to wake from idle.
+        .callTimeout(120, TimeUnit.SECONDS)
         .build()
 
     private val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
+        .baseUrl(BuildConfig.API_BASE_URL)
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    val eventApi: EventApi by lazy{
-        retrofit.create(EventApi::class.java)
-    }
-
-    val inviteApi: InviteApiService by lazy{
-        retrofit.create(InviteApiService::class.java)
-    }
-
-    fun eventApi(context: Context): EventApi {
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(
-                OkHttpClient.Builder()
-                    .addInterceptor(
-                        AuthInterceptor(context.applicationContext)
-                    )
-                    .build()
-            )
-            .addConverterFactory(
-                GsonConverterFactory.create()
-            )
-            .build()
-            .create(EventApi::class.java)
-    }
+    val authApi: AuthApi by lazy { retrofit.create(AuthApi::class.java) }
+    val eventApi: EventApi by lazy { retrofit.create(EventApi::class.java) }
+    val inviteApi: InviteApiService by lazy { retrofit.create(InviteApiService::class.java) }
+    val createEventApi: CreateEventApi by lazy { retrofit.create(CreateEventApi::class.java) }
 }

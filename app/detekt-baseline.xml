@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:CreateEventScreen.kt:eventName.isBlank() || eventDate.isBlank() || startTime.isBlank() || description.isBlank() || location.isBlank()</ID>
+    <ID>MagicNumber:AuthInterceptor.kt:TokenAuthenticator$401</ID>
+    <ID>MagicNumber:AuthSession.kt:AuthSession$100</ID>
+    <ID>MagicNumber:AuthSession.kt:AuthSession$1000</ID>
+    <ID>MagicNumber:AuthSession.kt:AuthSession$3</ID>
+    <ID>MagicNumber:AuthSession.kt:AuthSession$60</ID>
+    <ID>MagicNumber:AuthViewModel.kt:AuthViewModel$401</ID>
+    <ID>MagicNumber:AuthViewModel.kt:AuthViewModel$403</ID>
+    <ID>MagicNumber:AuthViewModel.kt:AuthViewModel$404</ID>
+    <ID>MagicNumber:AuthViewModel.kt:AuthViewModel$409</ID>
+    <ID>MatchingDeclarationName:PublicEventsScreen.kt:EventDto</ID>
+    <ID>MaxLineLength:AuthViewModel.kt:AuthViewModel$is ConnectException -&gt; "Unable to connect to the Event Tracker server. Check your connection and try again."</ID>
+    <ID>ReturnCount:AuthInterceptor.kt:TokenAuthenticator$override fun authenticate: Request?</ID>
+    <ID>TooManyFunctions:AuthSession.kt:AuthSession : BearerTokenProvider</ID>
+    <ID>UnusedParameter:GuestHomeActivity.kt:attendees: Int</ID>
+    <ID>UnusedParameter:GuestHomeActivity.kt:onDetails: () -&gt; Unit</ID>
+    <ID>UnusedParameter:GuestHomeActivity.kt:onEditEvent: () -&gt; Unit = {}</ID>
+  </CurrentIssues>
+</SmellBaseline>

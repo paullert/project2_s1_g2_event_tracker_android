@@ -1,0 +1,37 @@
+naming:
+  FunctionNaming:
+    active: true
+    ignoreAnnotated:
+      - "Composable"
+
+  PackageNaming:
+    active: false
+
+style:
+  MaxLineLength:
+    maxLineLength: 120
+
+  WildcardImport:
+    active: false
+
+  ForbiddenComment:
+    active: false
+
+  MagicNumber:
+    ignoreAnnotated:
+      - "Composable"
+    ignorePropertyDeclaration: true
+
+complexity:
+  LongMethod:
+    active: true
+    ignoreAnnotated:
+      - "Composable"
+    ignoreFunction:
+      - "onCreate"
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false
+  SwallowedException:
+    active: false

@@ -40,14 +40,23 @@ data class EventDto(
 )
 
 @Composable
-fun PublicEventList(modifier: Modifier = Modifier, getPublicEvents: Any.() -> List<EventDto>) {
+fun PublicEventList(modifier: Modifier = Modifier) {
     var events by remember { mutableStateOf<List<EventDto>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         try {
-            events = ApiClient.eventApi.getPublicEvents()
+            events = ApiClient.eventApi.getPublicEvents().content.map { event ->
+                EventDto(
+                    id = event.eventId,
+                    name = event.eventName,
+                    date = event.startsOn.substringBefore('T'),
+                    startTime = event.startsOn.substringAfter('T', "").take(5),
+                    endTime = "",
+                    location = event.locationId?.let { "Location $it" }
+                )
+            }
         } catch (exception: Exception) {
             errorMessage = exception.message ?: "Unable to load events"
         } finally {
@@ -124,7 +133,7 @@ private fun EventCard(event: EventDto) {
             Text(text = event.name, color = Color.Black, fontSize = 20.sp)
             Text(text = "Date: ${event.date}", color = Color.Black)
             Text(
-                text = "Time: ${event.startTime}-${event.endTime}",
+                text = "Time: ${event.startTime}",
                 color = Color.Black
             )
             Text(
