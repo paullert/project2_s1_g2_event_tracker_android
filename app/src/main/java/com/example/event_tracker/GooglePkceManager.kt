@@ -17,16 +17,16 @@ class GooglePkceManager(
         const val REQUEST_CODE = 1001
 
         private const val CLIENT_ID =
-            "YOUR_PKCE_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+            "433179782438-nsl6671oqkia8ofcqdjm1hde0fhk8k9n.apps.googleusercontent.com"
 
         private const val REDIRECT_URI =
-            "com.example.event_tracker://oauth2redirect"
+            "https://project2-s1-g4-event-tracker-api.onrender.com/oauth2redirect"
     }
 
     private val configuration =
         AuthorizationServiceConfiguration(
             "https://accounts.google.com/o/oauth2/v2/auth".toUri(),
-            "https://oauth2.googleapis.com/token".toUri()
+            "https://project2-s1-g4-event-tracker-api.onrender.com/oauth2redirect".toUri()
         )
 
     fun startLogin() {
